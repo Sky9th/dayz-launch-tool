@@ -1,0 +1,1 @@
+pyinstaller --noconsole main.py --add-data "config.txt;." --add-data "icon.ico;." --icon=./icon.ico

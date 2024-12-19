@@ -1,0 +1,8 @@
+mountDriverPath=P:/
+dayZInstallPath=S:/SteamLibrary/steamapps/common/DayZ
+dayZServerInstallPath=S:/SteamLibrary/steamapps/common/DayZServer
+devMod=I:/dayz/overSky
+dependeciesMod=I:/dayz/mods
+missionPath=S:/SteamLibrary/steamapps/common/DayZ/mpmissions/dayzOffline.chernarusplus
+offlineMissoinPath=S:/SteamLibrary/steamapps/common/DayZ/mpmissions/firstMission.ChernarusPlus
+workbenchPath=R:\SteamLibrary\steamapps\common\DayZ Tools\Bin\Workbench
