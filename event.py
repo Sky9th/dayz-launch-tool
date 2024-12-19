@@ -38,8 +38,6 @@ class Event():
         self.ui = ui
         self.mode = "Normal"
         self.filepath = get_resource_path("./config.txt")
-        self.config = {}
-        self.load_config()
 
         # # 启动日志监控任务
         # self.log_worker = Worker(self.start_log_monitor)
@@ -66,25 +64,15 @@ class Event():
         monitor_script_logs(log_directory, self.ui.update_log)  # 通过回调函数接收日志
 
     def on_config_update(self, value, key):
-        self.config[key] = value
-        print(self.config)
+        self.ui.config[key] = value
+        print(self.ui.config)
         self.save_config()
-
-    def load_config(self):
-        """Load configuration from a file."""
-        try:
-            with open(self.filepath, "r") as file:
-                for line in file:
-                    if "=" in line:
-                        key, value = line.strip().split("=", 1)
-                        self.config[key] = value
-        except FileNotFoundError:
-            pass  # 文件不存在时返回空配置
 
     def save_config(self):
         """Save the current configuration to a file."""
         with open(self.filepath, "w") as file:
-            for key, value in self.config.items():
+            for key, value in self.ui.config.items():
+                print(f"{key}={value}\n")
                 file.write(f"{key}={value}\n")
     
     def update_log(self, message):

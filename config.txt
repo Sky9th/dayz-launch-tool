@@ -1,8 +1,11 @@
-mountDriverPath=P:/
-dayZInstallPath=S:/SteamLibrary/steamapps/common/DayZ
-dayZServerInstallPath=S:/SteamLibrary/steamapps/common/DayZServer
-devMod=I:/dayz/overSky
-dependeciesMod=I:/dayz/mods
-missionPath=S:/SteamLibrary/steamapps/common/DayZ/mpmissions/dayzOffline.chernarusplus
-offlineMissoinPath=S:/SteamLibrary/steamapps/common/DayZ/mpmissions/firstMission.ChernarusPlus
+mountDriverPath=P:\
+dayZInstallPath=S:\SteamLibrary\steamapps\common\DayZ
+dayZServerInstallPath=S:\SteamLibrary\steamapps\common\DayZServer
+devMod=I:\dayz\overSky
+dependeciesMod=I:\dayz\mods
+missionPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\dayzOffline.chernarusplus
+offlineMissoinPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\firstMission.ChernarusPlus
 workbenchPath=R:\SteamLibrary\steamapps\common\DayZ Tools\Bin\Workbench
+modParams=-mod=P:\@CF;P:\@VPPAdminTools;P:\BasicMap;P:\BasicMapDefine;P:\MainMenu;P:\SchanaModParty;P:\ZenTerritories
+mods=['@CF', '@VPPAdminTools', 'BasicMap', 'BasicMapDefine', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
+selected_mods=['@CF', '@VPPAdminTools', 'BasicMap', 'BasicMapDefine', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories']

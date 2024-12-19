@@ -21,7 +21,9 @@ def read_config(config_file="./config.txt"):
         "missionPath": "",
         "offlineMissoinPath": "",
         "workbenchPath": "",
-        "modParams": []
+        "modParams": [],
+        "mods": [],
+        "selected_mods": []
     }
 
     # 检查配置文件是否存在
@@ -44,6 +46,7 @@ def read_config(config_file="./config.txt"):
 
     # 设置 mod 参数列表
     mod_params = []
+    mods = []
     print(config)
 
     def find_config_cpp(base_path, mount_path):
@@ -63,7 +66,9 @@ def read_config(config_file="./config.txt"):
                     dayz_link_path = os.path.join(config["dayZInstallPath"], relative_path)
 
                     # 添加到 mod_params
-                    mod_params.append(f"{mount_path}{relative_path}")
+                    if relative_path in config["selected_mods"]:
+                        mod_params.append(f"{mount_path}{relative_path}")
+                    mods.append(relative_path)
 
                     # 创建软链接
                     create_symlink(folder_path, mount_link_path)
@@ -78,7 +83,7 @@ def read_config(config_file="./config.txt"):
             if os.path.isfile(target):  # 如果路径是文件，报错
                 raise FileExistsError(f"Target path exists as a file: {target}")
             elif os.path.isdir(target):  # 如果路径已存在且是目录，跳过
-                print(f"Directory already exists, skipping: {target}")
+                # print(f"Directory already exists, skipping: {target}")
                 return
         else:
             os.makedirs(os.path.dirname(target), exist_ok=True)  # 确保目标父目录存在
@@ -98,6 +103,7 @@ def read_config(config_file="./config.txt"):
     # 设置最终的 modParams
     if mod_params:
         config["modParams"] = "-mod=" + ";".join(mod_params)
+    config["mods"] = mods
 
     # 输出时处理路径的斜杠
     for key in config:

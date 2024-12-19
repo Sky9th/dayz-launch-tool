@@ -1,8 +1,9 @@
 from functools import partial
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame, QLineEdit, QScrollArea, QFileDialog, QTextEdit
+from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame, QLineEdit, QScrollArea, QFileDialog, QTextEdit, QListWidget, QListWidgetItem, QCheckBox
 from PySide6.QtGui import QFont, QTextCursor, QIcon
 from PySide6.QtCore import Qt
 from event import Event
+from read_config import read_config
 from util import get_resource_path
 
 class MainUI(QWidget):
@@ -13,11 +14,12 @@ class MainUI(QWidget):
         self.server_log = None
         self.client_log = None
 
+        self.config = read_config()
         self.eventHandler = Event(self)
 
         self.setWindowIcon(QIcon(get_resource_path('./icon.ico')))
         self.setWindowTitle("OverSky DayZ Debug Luanch [Author:Sky9th]")
-        self.setGeometry(100, 100, 500, 600)
+        self.setGeometry(100, 100, 700, 600)
 
         # Create the main layout (Vertical Layout)
         main_layout = QHBoxLayout()
@@ -27,16 +29,18 @@ class MainUI(QWidget):
         main_set_widget.setFixedWidth(450)
 
         # Add error log layout
-        main_layout.addLayout(self.create_error_log_layout())
         main_set_layout = QVBoxLayout(main_set_widget)
         main_set_layout.addLayout(self.create_start_layout())
         main_set_layout.addWidget(self.create_divider())
         main_set_layout.addLayout(self.create_config_layout())
+        main_set_layout.addLayout(self.create_error_log_layout())
         main_layout.addLayout(main_set_layout)
 
         main_layout.addWidget(main_set_widget)
 
         main_log_layout = QHBoxLayout()
+        self.mods_layout = self.create_mods_layout()
+        main_log_layout.addLayout(self.mods_layout)
         # main_log_layout.addLayout(self.create_log_layout("Client Log", "client"))
         # main_log_layout.addLayout(self.create_log_layout("Server Log", "server"))
         main_layout.addLayout(main_log_layout)
@@ -278,7 +282,7 @@ class MainUI(QWidget):
         for label, config_key in config_items:
             root_layout.addLayout(self.create_input_with_directory_picker(
                 label,  # Label text
-                self.eventHandler.config[config_key],  # Initial path value
+                self.config[config_key],  # Initial path value
                 self.eventHandler.on_config_update,  # Callback function
                 config_key  # Additional argument for the callback
             ))
@@ -337,20 +341,15 @@ class MainUI(QWidget):
         root_layout = QVBoxLayout()
         root_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
 
-        # Create the title label
-        label = QLabel("Error Log")
-        label.setAlignment(Qt.AlignLeft)
-        root_layout.addWidget(label)
-
         # Create the scrollable text box for logs
         self.error_log = QTextEdit()
         self.error_log.setReadOnly(True)
-        self.error_log.setPlaceholderText("Errors will appear here...")
 
         scroll_area = QScrollArea()
         scroll_area.setWidget(self.error_log)
         scroll_area.setWidgetResizable(True)
-
+        scroll_area.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        
         root_layout.addWidget(scroll_area)
 
         return root_layout
@@ -363,3 +362,58 @@ class MainUI(QWidget):
         cursor.insertText(content + "\n")
         self.error_log.setTextCursor(cursor)
         self.error_log.ensureCursorVisible()
+
+    def create_mods_layout(self):
+        root_layout = QVBoxLayout()
+        # Create the list widget
+        root_layout.addWidget(self.create_h1_label("Mod list"))
+        self.mod_list_widget = QListWidget()
+
+        # Example mod names
+        self.update_mod_list()
+
+        root_layout.addWidget(self.mod_list_widget)
+        button_refresh = QPushButton()
+        button_refresh.setText("Fresh")
+        button_refresh.clicked.connect(self.refresh_config)
+        root_layout.addWidget(button_refresh)
+        return root_layout
+    
+    def update_mod_list(self):
+        """Clear and update the list widget with new mod names."""
+        self.mod_list_widget.clear()  # Clear the existing items
+
+        mod_names = self.config["mods"]
+        # Add items to the list widget with checkboxes
+        for mod_name in mod_names:
+            # item_layout = QHBoxLayout()
+            item = QListWidgetItem()
+            checkbox = QCheckBox(mod_name)
+            # item_layout.addWidget(checkbox)
+            if mod_name in self.config["selected_mods"]:
+                checkbox.setChecked(True)
+            else:
+                checkbox.setChecked(False)
+            self.mod_list_widget.addItem(item)
+            self.mod_list_widget.setItemWidget(item, checkbox)
+
+            # Connect each checkbox state change to the update_selected_mods method
+            checkbox.stateChanged.connect(self.update_selected_mods)
+    
+    def update_selected_mods(self):
+        """Update selected_mods based on checkbox states."""
+        self.config["selected_mods"] = []  # Clear the previous selection
+
+        # Iterate through all checkboxes to update selected_mods
+        for index in range(self.mod_list_widget.count()):
+            item = self.mod_list_widget.item(index)
+            checkbox = self.mod_list_widget.itemWidget(item)
+            if checkbox.isChecked():
+                self.config["selected_mods"].append(checkbox.text())  # Add the mod to selected_mods if checked
+
+        self.eventHandler.save_config()
+        print(self.config)
+
+    def refresh_config(self):
+        self.config = read_config()
+        self.update_mod_list()
