@@ -4,8 +4,9 @@ import sys
 import psutil
 from run import run
 from thread import Worker
-from logger import monitor_script_logs  # 导入 logger 的监控日志函数
+from logger import LogMonitor  # 导入 logger 的监控日志函数
 import traceback
+import threading
 
 from util import get_resource_path
 
@@ -35,19 +36,34 @@ def catch_exceptions(update_error_log):
 class Event():
 
     def __init__(self, ui):
+        print("Event init")
         self.ui = ui
-        self.mode = "Normal"
+        self.mode = "normal"
         self.filepath = get_resource_path("./config.txt")
-
-        # # 启动日志监控任务
-        # self.log_worker = Worker(self.start_log_monitor)
-        # self.log_worker.start()
+        self.monitor_worker = None
 
     @catch_exceptions(catch_exceptions)
     def run_dayz(self, program, server = False):
         # 实例化 Worker，并传入回调函数和参数
-        self.dayzWorker = Worker(run, self.update_error_log, self.mode, program, server)
+        self.dayzWorker = Worker(run, self.mode, program, server)
         self.dayzWorker.start()  # 启动子线程
+        
+        # 检查并结束现有的线程
+        # 检查并结束现有线程
+        if self.monitor_worker and self.monitor_worker.isRunning():
+            print("Stopping existing thread...")
+            self.stop_event.set()  # 设置停止标志
+            self.monitor_worker.wait()  # 等待线程结束
+            print("Existing thread stopped.")
+
+        # 创建新的 `stop_event` 和 `LogMonitor` 实例
+        log_directory = self.ui.config["dayZInstallPath"] + "\ClientProfile"
+        self.stop_event = threading.Event()  # 创建停止标志
+        monitor = LogMonitor(log_directory, self.ui.log_update_signal.emit, stop_event=self.stop_event)
+        
+        # 启动新的 Worker
+        self.monitor_worker = Worker(monitor.monitor)
+        self.monitor_worker.start()
         
     def on_mode_select(self, mode):
         self.ui.button_normal.setChecked(False)
@@ -57,11 +73,6 @@ class Event():
         if (mode == "mission"):
             self.ui.button_mission.setChecked(True)
         self.mode = mode
-
-    def start_log_monitor(self):
-        # 调用 logger.py 中的日志监控函数，并传入回调函数
-        log_directory = r"C:\Users\Sky9th\AppData\Local\DayZ"  # 设置日志目录路径
-        monitor_script_logs(log_directory, self.ui.update_log)  # 通过回调函数接收日志
 
     def on_config_update(self, value, key):
         self.ui.config[key] = value

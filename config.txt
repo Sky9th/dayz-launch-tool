@@ -6,7 +6,7 @@ dependeciesMod=I:\dayz\mods
 missionPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\dayzOffline.chernarusplus
 offlineMissoinPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\firstMission.ChernarusPlus
 workbenchPath=R:\SteamLibrary\steamapps\common\DayZ Tools\Bin\Workbench
-selected=@CF,@VPPAdminTools,BasicMap,BasicMapDefine,MainMenu,SchanaModParty,SchanaModPartyDefine,ZenTerritories,ZenUtilities
-modParams=-mod=P:\@CF;P:\@VPPAdminTools;P:\BasicMap;P:\BasicMapDefine;P:\MainMenu;P:\SchanaModParty;P:\SchanaModPartyDefine;P:\ZenTerritories;P:\ZenUtilities
-mods=['@CF', '@VPPAdminTools', 'BasicMap', 'BasicMapDefine', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
-selected_mods=['@CF', '@VPPAdminTools', 'BasicMap', 'BasicMapDefine', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
+selected=@CF,BasicMap,BasicMapDefine,CraftingStation,MainMenu,OVSAdminTool,SchanaModParty,SchanaModPartyDefine,ZenTerritories,ZenUtilities
+modParams=-mod=P:\@CF;P:\BasicMap;P:\BasicMapDefine;P:\CraftingStation;P:\MainMenu;P:\SchanaModParty;P:\SchanaModPartyDefine;P:\ZenTerritories;P:\ZenUtilities
+mods=['@CF', '@RaG_BaseItems', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'MainMenu', 'OVSAdminTool', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
+selected_mods=['@CF', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'MainMenu', 'OVSAdminTool', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
