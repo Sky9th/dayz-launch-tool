@@ -21,6 +21,7 @@ def read_config(config_file="./config.txt"):
         "missionPath": "",
         "offlineMissoinPath": "",
         "workbenchPath": "",
+        "selected": "",
         "modParams": [],
         "mods": [],
         "selected_mods": []
@@ -42,7 +43,12 @@ def read_config(config_file="./config.txt"):
                 key = key.strip()
                 value = value.strip()
                 if key in config:
-                    config[key] = value
+                    if (key == "selected"):
+                        config["selected_mods"] = value.split(',')
+                    elif (key == "selected_mods"):
+                        continue
+                    else:
+                        config[key] = value
 
     # 设置 mod 参数列表
     mod_params = []

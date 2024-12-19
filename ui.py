@@ -1,7 +1,7 @@
 from functools import partial
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame, QLineEdit, QScrollArea, QFileDialog, QTextEdit, QListWidget, QListWidgetItem, QCheckBox
 from PySide6.QtGui import QFont, QTextCursor, QIcon
-from PySide6.QtCore import Qt
+from PySide6.QtCore import Qt, QTimer
 from event import Event
 from read_config import read_config
 from util import get_resource_path
@@ -16,6 +16,10 @@ class MainUI(QWidget):
 
         self.config = read_config()
         self.eventHandler = Event(self)
+
+        self.save_timer = QTimer()
+        self.save_timer.setSingleShot(True)
+        self.save_timer.timeout.connect(self.eventHandler.save_config)
 
         self.setWindowIcon(QIcon(get_resource_path('./icon.ico')))
         self.setWindowTitle("OverSky DayZ Debug Luanch [Author:Sky9th]")
@@ -384,21 +388,22 @@ class MainUI(QWidget):
         self.mod_list_widget.clear()  # Clear the existing items
 
         mod_names = self.config["mods"]
-        # Add items to the list widget with checkboxes
+        selected = self.config["selected_mods"]
+        print(selected)
+
         for mod_name in mod_names:
-            # item_layout = QHBoxLayout()
             item = QListWidgetItem()
             checkbox = QCheckBox(mod_name)
-            # item_layout.addWidget(checkbox)
-            if mod_name in self.config["selected_mods"]:
-                checkbox.setChecked(True)
-            else:
-                checkbox.setChecked(False)
+
+            # 正确的布尔判断
+            isChecked = mod_name in selected
+
+            checkbox.setChecked(isChecked)  # 设置复选框状态
             self.mod_list_widget.addItem(item)
             self.mod_list_widget.setItemWidget(item, checkbox)
-
-            # Connect each checkbox state change to the update_selected_mods method
             checkbox.stateChanged.connect(self.update_selected_mods)
+
+
     
     def update_selected_mods(self):
         """Update selected_mods based on checkbox states."""
@@ -411,8 +416,10 @@ class MainUI(QWidget):
             if checkbox.isChecked():
                 self.config["selected_mods"].append(checkbox.text())  # Add the mod to selected_mods if checked
 
-        self.eventHandler.save_config()
-        print(self.config)
+        # Start or reset the timer for saving config
+        if self.save_timer.isActive():
+            self.save_timer.stop()
+        self.save_timer.start(300)  # Delay of 300ms
 
     def refresh_config(self):
         self.config = read_config()

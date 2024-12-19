@@ -70,6 +70,8 @@ class Event():
 
     def save_config(self):
         """Save the current configuration to a file."""
+        self.ui.config['selected'] = ",".join(self.ui.config['selected_mods'])
+        
         with open(self.filepath, "w") as file:
             for key, value in self.ui.config.items():
                 print(f"{key}={value}\n")
