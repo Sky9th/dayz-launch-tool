@@ -1,5 +1,6 @@
 import os
 import sys
+from PySide6.QtCore import QMetaObject, Qt
 
 
 def get_resource_path(relative_path):

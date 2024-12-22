@@ -54,7 +54,7 @@ def read_config(config_file="./config.txt"):
     # 设置 mod 参数列表
     mod_params = []
     mods = []
-    print(config)
+    # print(config)
 
     def find_config_cpp(base_path, mount_path):
         """

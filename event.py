@@ -40,36 +40,49 @@ class Event():
         self.ui = ui
         self.mode = "normal"
         self.filepath = get_resource_path("./config.txt")
-        self.monitor_worker = None
+        self.monitor_client_worker = None
+        self.monitor_server_worker = None
 
     @catch_exceptions(catch_exceptions)
     def run_dayz(self, program, server = False):
         if(self.ui.config["kill_before_start"] == "True"):
-            if (server):
-                self.kill_dayz_server()
-            else:
-                self.kill_dayz()
+            self.kill_dayz()
 
         # 实例化 Worker，并传入回调函数和参数
         self.dayzWorker = Worker(run, self.mode, program, server)
         self.dayzWorker.start()  # 启动子线程
+
+        self.create_log_worker(server)
         
-        # 检查并结束现有的线程
+    def create_log_worker(self, server):
         # 检查并结束现有线程
-        if self.monitor_worker and self.monitor_worker.isRunning():
-            print("Stopping existing thread...")
-            self.stop_event.set()  # 设置停止标志
-            self.monitor_worker.wait()  # 等待线程结束
-            print("Existing thread stopped.")
+        if server:
+            if hasattr(self, "server_worker") and self.server_worker and self.server_worker.isRunning():
+                print("Stopping existing server thread...")
+                self.stop_server_event.set()  # 设置停止标志
+                self.server_worker.wait(5000)  # 等待线程结束，最多5秒
+                print("Existing server thread stopped.")
+        else:
+            if hasattr(self, "client_worker") and self.client_worker and self.client_worker.isRunning():
+                print("Stopping existing client thread...")
+                self.stop_client_event.set()  # 设置停止标志
+                self.client_worker.wait(5000)  # 等待线程结束，最多5秒
+                print("Existing client thread stopped.")
 
         # 创建新的 `stop_event` 和 `LogMonitor` 实例
-        log_directory = self.ui.config["dayZInstallPath"] + "\ClientProfile"
-        self.stop_event = threading.Event()  # 创建停止标志
-        monitor = LogMonitor(log_directory, self.ui.log_update_signal.emit, stop_event=self.stop_event)
-        
-        # 启动新的 Worker
-        self.monitor_worker = Worker(monitor.monitor)
-        self.monitor_worker.start()
+        log_directory = self.ui.config["dayZInstallPath"]
+        if server:
+            self.stop_server_event = threading.Event()  # 创建停止标志
+            log_directory += "\ServerProfile"
+            monitor = LogMonitor(log_directory, self.ui.log_update_server_signal, stop_event=self.stop_server_event)
+            self.server_worker = Worker(monitor.monitor)  # 创建服务器监控线程
+            self.server_worker.start()  # 启动服务器线程
+        else:
+            self.stop_client_event = threading.Event()  # 创建停止标志
+            log_directory += "\ClientProfile"
+            monitor = LogMonitor(log_directory, self.ui.log_update_client_signal, stop_event=self.stop_client_event)
+            self.client_worker = Worker(monitor.monitor)  # 创建客户端监控线程
+            self.client_worker.start()  # 启动客户端线程
         
     def on_mode_select(self, mode):
         self.ui.button_normal.setChecked(False)

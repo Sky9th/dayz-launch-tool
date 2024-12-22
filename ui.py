@@ -1,15 +1,22 @@
 from functools import partial
 from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame, QLineEdit, QScrollArea, QFileDialog, QTextEdit, QListWidget, QListWidgetItem, QCheckBox
 from PySide6.QtGui import QFont, QTextCursor, QIcon
-from PySide6.QtCore import Qt, QTimer, Signal
+from PySide6.QtCore import Qt, QTimer, Signal, QObject
 from event import Event
 from read_config import read_config
 from util import get_resource_path
+from PySide6.QtCore import QMetaObject, Qt
+
+# 定义全局信号类
+class UISignals(QObject):
+    log_update_client_signal = Signal(str)  # 用于更新客户端日志
+    log_update_server_signal = Signal(str)  # 用于更新服务端日志
 
 class MainUI(QWidget):
 
     # 定义信号
-    log_update_signal = Signal(str)
+    log_update_client_signal = Signal(str)
+    log_update_server_signal = Signal(str)
 
     def __init__(self):
         super().__init__()
@@ -26,7 +33,7 @@ class MainUI(QWidget):
 
         self.setWindowIcon(QIcon(get_resource_path('./icon.ico')))
         self.setWindowTitle("OverSky DayZ Debug Luanch [Author:Sky9th]")
-        self.setGeometry(100, 100, 1000, 600)
+        self.setGeometry(100, 100, 1500, 600)
 
         # Create the main layout (Vertical Layout)
         main_layout = QHBoxLayout()
@@ -48,10 +55,12 @@ class MainUI(QWidget):
 
         self.max_log_size = 50000  # 设置日志框最大字符数（可根据需要调整）
         self.max_lines = 200  # 设置最大行数（可根据需要调整）
-        self.log_update_signal.connect(self.update_log)
+        self.log_update_client_signal.connect(self.update_client_log)
+        self.log_update_server_signal.connect(self.update_server_log)
+
         main_log_layout.addLayout(self.create_mods_layout())
         main_log_layout.addLayout(self.create_log_layout("Client Log", "client"))
-        # main_log_layout.addLayout(self.create_log_layout("Server Log", "server"))
+        main_log_layout.addLayout(self.create_log_layout("Server Log", "server"))
 
         main_layout.addLayout(main_log_layout)
         # Set the main layout for the window
@@ -196,7 +205,6 @@ class MainUI(QWidget):
         check_layout.addWidget(label_program)
         check_layout.addWidget(checkbox_kill_before_start)
         checkbox_kill_before_start.stateChanged.connect(self.update_status)
-        print(self.config["kill_before_start"]);
         kill_status = self.str_to_bool(self.config["kill_before_start"])
         checkbox_kill_before_start.setChecked(kill_status)
         self.checkbox_kill_before_start = checkbox_kill_before_start
@@ -338,12 +346,26 @@ class MainUI(QWidget):
 
         return root_layout
     
-    def update_log(self, content):
-        """
-        更新客户端日志组件内容，并保证日志不会过多。
-        :param content: 日志内容
-        """
+    def update_server_log(self, content):
+        # 保证文本框内容不会超过最大长度
+        max_length = 10000  # 限制最大字符数
+        current_text = self.server_log.toPlainText()
+        new_text = current_text + content
+        
+        # 只保留最大长度的日志
+        if len(new_text) > max_length:
+            self.server_log.setPlainText(new_text[-max_length:])  # 仅保留最新的日志
+        else:
+            self.server_log.setPlainText(new_text)
 
+        # 确保滚动到最新位置
+        self.server_log.ensureCursorVisible() 
+        
+        cursor = self.server_log.textCursor()
+        cursor.movePosition(QTextCursor.End)  # 将光标移动到末尾
+        self.server_log.setTextCursor(cursor)  # 更新文本框的光标位置
+
+    def update_client_log(self, content):
         # 保证文本框内容不会超过最大长度
         max_length = 10000  # 限制最大字符数
         current_text = self.client_log.toPlainText()
