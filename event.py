@@ -44,6 +44,12 @@ class Event():
 
     @catch_exceptions(catch_exceptions)
     def run_dayz(self, program, server = False):
+        if(self.ui.config["kill_before_start"] == "True"):
+            if (server):
+                self.kill_dayz_server()
+            else:
+                self.kill_dayz()
+
         # 实例化 Worker，并传入回调函数和参数
         self.dayzWorker = Worker(run, self.mode, program, server)
         self.dayzWorker.start()  # 启动子线程

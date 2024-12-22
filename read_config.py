@@ -22,6 +22,7 @@ def read_config(config_file="./config.txt"):
         "offlineMissoinPath": "",
         "workbenchPath": "",
         "selected": "",
+        "kill_before_start": "",
         "modParams": [],
         "mods": [],
         "selected_mods": []

@@ -41,21 +41,19 @@ class MainUI(QWidget):
         main_set_layout.addWidget(self.create_divider())
         main_set_layout.addLayout(self.create_config_layout())
         main_set_layout.addLayout(self.create_error_log_layout())
-        main_layout.addLayout(main_set_layout)
-
+        # main_layout.addLayout(main_set_layout)
         main_layout.addWidget(main_set_widget)
 
         main_log_layout = QHBoxLayout()
-        self.mods_layout = self.create_mods_layout()
-        main_log_layout.addLayout(self.mods_layout)
 
         self.max_log_size = 50000  # 设置日志框最大字符数（可根据需要调整）
         self.max_lines = 200  # 设置最大行数（可根据需要调整）
         self.log_update_signal.connect(self.update_log)
+        main_log_layout.addLayout(self.create_mods_layout())
         main_log_layout.addLayout(self.create_log_layout("Client Log", "client"))
         # main_log_layout.addLayout(self.create_log_layout("Server Log", "server"))
-        main_layout.addLayout(main_log_layout)
 
+        main_layout.addLayout(main_log_layout)
         # Set the main layout for the window
         self.setLayout(main_layout)
 
@@ -192,6 +190,17 @@ class MainUI(QWidget):
         program_layout.addWidget(button_workbench)
         program_layout.setContentsMargins(0, 0, 50, 0)
         
+        check_layout = QHBoxLayout()
+        label_program = self.create_h3_label("")
+        checkbox_kill_before_start = QCheckBox("Kill task before run")
+        check_layout.addWidget(label_program)
+        check_layout.addWidget(checkbox_kill_before_start)
+        checkbox_kill_before_start.stateChanged.connect(self.update_status)
+        print(self.config["kill_before_start"]);
+        kill_status = self.str_to_bool(self.config["kill_before_start"])
+        checkbox_kill_before_start.setChecked(kill_status)
+        self.checkbox_kill_before_start = checkbox_kill_before_start
+        
         # Create and add the second button group (Left and Right layout)
         mode_layout = QHBoxLayout()
         mode_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # Align top-left
@@ -213,6 +222,7 @@ class MainUI(QWidget):
         # Add the game label and button groups to the game layout
         game_layout.addWidget(self.create_h1_label("Game"))
         game_layout.addLayout(program_layout)
+        game_layout.addLayout(check_layout)
         game_layout.addLayout(mode_layout)
 
         return game_layout
@@ -352,7 +362,6 @@ class MainUI(QWidget):
         cursor.movePosition(QTextCursor.End)  # 将光标移动到末尾
         self.client_log.setTextCursor(cursor)  # 更新文本框的光标位置
     
-
     def create_error_log_layout(self):
         """Creates the layout for displaying error logs."""
         root_layout = QVBoxLayout()
@@ -372,7 +381,6 @@ class MainUI(QWidget):
         return root_layout
 
     def update_error_log(self, content):
-        print(content)
         """Append error content to the error log."""
         cursor = self.error_log.textCursor()
         cursor.movePosition(QTextCursor.End)
@@ -381,10 +389,13 @@ class MainUI(QWidget):
         self.error_log.ensureCursorVisible()
 
     def create_mods_layout(self):
+        # root_widget = QWidget()
+        # root_widget.setFixedWidth(450)
         root_layout = QVBoxLayout()
         # Create the list widget
         root_layout.addWidget(self.create_h1_label("Mod list"))
         self.mod_list_widget = QListWidget()
+        self.mod_list_widget.setFixedWidth(200)
 
         # Example mod names
         self.update_mod_list()
@@ -396,13 +407,15 @@ class MainUI(QWidget):
         root_layout.addWidget(button_refresh)
         return root_layout
     
+    def update_status(self):
+        self.eventHandler.on_config_update(self.checkbox_kill_before_start.isChecked(), "kill_before_start")
+
     def update_mod_list(self):
         """Clear and update the list widget with new mod names."""
         self.mod_list_widget.clear()  # Clear the existing items
 
         mod_names = self.config["mods"]
         selected = self.config["selected_mods"]
-        print(selected)
 
         for mod_name in mod_names:
             item = QListWidgetItem()
@@ -415,7 +428,6 @@ class MainUI(QWidget):
             self.mod_list_widget.addItem(item)
             self.mod_list_widget.setItemWidget(item, checkbox)
             checkbox.stateChanged.connect(self.update_selected_mods)
-
     
     def update_selected_mods(self):
         """Update selected_mods based on checkbox states."""
@@ -432,6 +444,16 @@ class MainUI(QWidget):
         if self.save_timer.isActive():
             self.save_timer.stop()
         self.save_timer.start(300)  # Delay of 300ms
+
+    def str_to_bool(self, value):
+        true_values = {"true", "yes", "1"}
+        false_values = {"false", "no", "0"}
+
+        if value.lower() in true_values:
+            return True
+        elif value.lower() in false_values:
+            return False
+        return False
 
     def refresh_config(self):
         self.config = read_config()

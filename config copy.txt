@@ -3,11 +3,11 @@ dayZInstallPath=S:\SteamLibrary\steamapps\common\DayZ
 dayZServerInstallPath=S:\SteamLibrary\steamapps\common\DayZServer
 devMod=I:\dayz\overSky
 dependeciesMod=I:\dayz\mods
-missionPath=
+missionPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\dayzOffline.chernarusplus
 offlineMissoinPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\firstMission.ChernarusPlus
-workbenchPath=
+workbenchPath=R:\SteamLibrary\steamapps\common\DayZ Tools\Bin\Workbench
 selected=@RaG_BaseItems,JM\CF\GUI,JM\CF\Legacy,JM\CF\Scripts,AdminTool,BasicMap,BasicMapDefine,CraftingStation,MainMenu,SchanaModParty,SchanaModPartyDefine,ZenTerritories,ZenUtilities
 kill_before_start=True
-modParams=
+modParams=-mod=P:\@RaG_BaseItems;P:\JM\CF\GUI;P:\JM\CF\Legacy;P:\JM\CF\Scripts;P:\AdminTool;P:\BasicMap;P:\BasicMapDefine;P:\CraftingStation;P:\MainMenu;P:\SchanaModParty;P:\SchanaModPartyDefine;P:\ZenTerritories;P:\ZenUtilities
 mods=['@RaG_BaseItems', 'JM\\CF\\GUI', 'JM\\CF\\Legacy', 'JM\\CF\\Scripts', 'AdminTool', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
 selected_mods=['@RaG_BaseItems', 'JM\\CF\\GUI', 'JM\\CF\\Legacy', 'JM\\CF\\Scripts', 'AdminTool', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
