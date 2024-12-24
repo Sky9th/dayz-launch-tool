@@ -21,6 +21,7 @@ class MainUI(QWidget):
     def __init__(self):
         super().__init__()
 
+        self.checkbox_kill_before_start = None
         self.server_log = None
         self.client_log = None
 
@@ -204,9 +205,9 @@ class MainUI(QWidget):
         checkbox_kill_before_start = QCheckBox("Kill task before run")
         check_layout.addWidget(label_program)
         check_layout.addWidget(checkbox_kill_before_start)
-        checkbox_kill_before_start.stateChanged.connect(self.update_status)
         kill_status = self.str_to_bool(self.config["kill_before_start"])
         checkbox_kill_before_start.setChecked(kill_status)
+        checkbox_kill_before_start.stateChanged.connect(self.update_status)
         self.checkbox_kill_before_start = checkbox_kill_before_start
         
         # Create and add the second button group (Left and Right layout)
