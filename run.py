@@ -18,7 +18,7 @@ def run(dayzMode, program, server):
             exe = "DayZServer_x64.exe"
         else:
             path = config["dayZInstallPath"]
-            exe = "DayZ_x64.exe"
+            exe = "DayZ_BE.exe"
     elif (program == "Workbench"):
         path = config["workbenchPath"]
         exe = "workbenchApp.exe"
