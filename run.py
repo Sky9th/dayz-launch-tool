@@ -48,13 +48,9 @@ def run(dayzMode, program, server):
             "-d",
             "-filePatching"  # 确保将 "-filePatching" 添加到命令行参数中
         ]
-
         
     if (dayzMode == "mission"):
-        if(server and exe == "DayZDiag_x64.exe"):
-            command.append("-mission")
-            command.append(config["offlineMissoinPath"])
-        elif(server == False):
+        if(server == False):
             command.append("-mission")
             command.append(config["offlineMissoinPath"])
 
