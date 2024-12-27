@@ -41,7 +41,7 @@ class MainUI(QWidget):
         main_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # Align top-left
 
         main_set_widget = QWidget()
-        main_set_widget.setFixedWidth(450)
+        main_set_widget.setFixedWidth(500)
 
         # Add error log layout
         main_set_layout = QVBoxLayout(main_set_widget)
@@ -103,22 +103,6 @@ class MainUI(QWidget):
     def create_h3_label(self, text):
         """Creates and styles a label with size H3."""
         return self.create_label(text, 10, 20, 120)
-
-    def create_input(self, text = "", placeholder = ""):
-
-        root_layout = QHBoxLayout()
-        root_layout.setContentsMargins(0, 5, 0, 5)
-        
-        if (text):
-            label = self.create_h3_label(text)
-            root_layout.addWidget(label)
-
-        input = QLineEdit()
-        input.setPlaceholderText(placeholder)  # Placeholder text when the input is empty
-        input.setFixedWidth(200)  # Set the width of the input box
-        root_layout.addWidget(input)
-
-        return root_layout
     
     def create_input_with_directory_picker(self, text="", value="", callback=None, *callback_args):
         """Creates an input box with a directory picker button and optional callback."""
@@ -153,6 +137,30 @@ class MainUI(QWidget):
         root_layout.addLayout(pick_layout)
 
         return root_layout
+
+    def create_input(self, text="", value="", callback=None, *callback_args):
+        """Creates an input box with a directory picker button and optional callback."""
+        root_layout = QHBoxLayout()
+        root_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)
+        root_layout.setContentsMargins(0, 5, 0, 5)
+
+        # Add label if text is provided
+        if text:
+            label = self.create_h3_label(text)
+            root_layout.addWidget(label)
+
+        # Create the input box
+        input_box = QLineEdit()
+        input_box.setText(value)
+        input_box.setFixedWidth(280)
+        input_box.setFixedHeight(30)
+        input_box.textChanged.connect(partial(self.on_config_input, callback, *callback_args))
+
+        root_layout.addWidget(input_box)
+        return root_layout
+    
+    def on_config_input(self, callback, key, value):
+        callback(value, key)
 
     def select_directory(self, input_box, callback, *callback_args):
         """Handle directory selection and trigger the callback with additional arguments."""
@@ -189,15 +197,18 @@ class MainUI(QWidget):
         label_program = self.create_h3_label("Program")
         button_dayz = QPushButton("DayZ")
         button_dayz.clicked.connect(lambda: self.eventHandler.run_dayz("DayZ"))
-        button_dayzdiag = QPushButton("DayZDiag")
-        button_dayzdiag.clicked.connect(lambda: self.eventHandler.run_dayz("DayZDiag"))
-        button_workbench = QPushButton("Workbench")
-        button_workbench.clicked.connect(lambda: self.eventHandler.run_dayz("Workbench"))
+        # button_dayz_offline = QPushButton("DayZ Offline")
+        # button_dayz_offline.clicked.connect(lambda: self.eventHandler.run_dayz("DayZ Offline"))
+        button_dayzdiag = QPushButton("DayZDiag Offline")
+        button_dayzdiag.clicked.connect(lambda: self.eventHandler.run_dayz("DayZDiag Offline"))
+        # button_workbench = QPushButton("Workbench")
+        # button_workbench.clicked.connect(lambda: self.eventHandler.run_dayz("Workbench"))
 
         program_layout.addWidget(label_program)
         program_layout.addWidget(button_dayz)
+        # program_layout.addWidget(button_dayz_offline)
         program_layout.addWidget(button_dayzdiag)
-        program_layout.addWidget(button_workbench)
+        # program_layout.addWidget(button_workbench)
         program_layout.setContentsMargins(0, 0, 50, 0)
         
         check_layout = QHBoxLayout()
@@ -214,14 +225,14 @@ class MainUI(QWidget):
         mode_layout = QHBoxLayout()
         mode_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # Align top-left
         label_mode = self.create_h3_label("Mode")
-        button_normal = QPushButton("Normal")
+        button_normal = QPushButton("MainMenu")
         button_normal.setCheckable(True)
         button_normal.setChecked(True)
-        button_normal.clicked.connect(lambda: self.eventHandler.on_mode_select("normal"))
+        button_normal.clicked.connect(lambda: self.eventHandler.on_mode_select("MainMenu"))
         self.button_normal = button_normal
-        button_mission = QPushButton("Mission")
+        button_mission = QPushButton("AutoConnect")
         button_mission.setCheckable(True)
-        button_mission.clicked.connect(lambda: self.eventHandler.on_mode_select("mission"))
+        button_mission.clicked.connect(lambda: self.eventHandler.on_mode_select("AutoConnect"))
         self.button_mission = button_mission
 
         mode_layout.addWidget(label_mode)
@@ -249,12 +260,12 @@ class MainUI(QWidget):
 
         button_dayz = QPushButton("DayZ")
         button_dayz.clicked.connect(lambda: self.eventHandler.run_dayz("DayZ", True))
-        button_dayzdiag = QPushButton("DayZDiag")
-        button_dayzdiag.clicked.connect(lambda: self.eventHandler.run_dayz("DayZDiag", True))
+        # button_dayzdiag = QPushButton("DayZDiag")
+        # button_dayzdiag.clicked.connect(lambda: self.eventHandler.run_dayz("DayZDiag", True))
 
         program_layout.addWidget(label_program)
         program_layout.addWidget(button_dayz)
-        program_layout.addWidget(button_dayzdiag)
+        # program_layout.addWidget(button_dayzdiag)
 
         # Add the game label and button groups to the game layout
         game_layout.addWidget(self.create_h1_label("Server"))
@@ -302,12 +313,19 @@ class MainUI(QWidget):
             ("Mount Driver", "mountDriverPath"),
             ("DayZ Install Path", "dayZInstallPath"),
             ("DayZ Server Install Path", "dayZServerInstallPath"),
+            ("Mikero Path", "MikeroDePboToolsMakePboPath"),
             ("Your Mod Path", "devMod"),
             ("Dependencies Mod Path", "dependeciesMod"),
             # ("Mission Path", "missionPath"),
             ("Offline Mission Path", "offlineMissoinPath")
         ]
 
+        root_layout.addLayout(self.create_input(
+            "Dev Mod Name",  # Label text
+            self.config["devModName"],  # Initial path value
+            self.eventHandler.on_config_update,  # Callback function
+            "devModName"  # Additional argument for the callback
+        ));
         # Loop through the configuration items and add them to the layout
         for label, config_key in config_items:
             root_layout.addLayout(self.create_input_with_directory_picker(
@@ -412,22 +430,26 @@ class MainUI(QWidget):
         self.error_log.ensureCursorVisible()
 
     def create_mods_layout(self):
-        # root_widget = QWidget()
-        # root_widget.setFixedWidth(450)
         root_layout = QVBoxLayout()
-        # Create the list widget
-        root_layout.addWidget(self.create_h1_label("Mod list"))
-        self.mod_list_widget = QListWidget()
-        self.mod_list_widget.setFixedWidth(200)
+        
+        self.dev_mod_list_widget = QListWidget()
+        self.dev_mod_list_widget.setFixedWidth(200)
 
-        # Example mod names
-        self.update_mod_list()
+        self.depend_mod_list_widget = QListWidget()
+        self.depend_mod_list_widget.setFixedWidth(200)
 
-        root_layout.addWidget(self.mod_list_widget)
         button_refresh = QPushButton()
         button_refresh.setText("Fresh")
         button_refresh.clicked.connect(self.refresh_config)
+
+        root_layout.addWidget(self.create_h1_label("Dev Mod"))
+        root_layout.addWidget(self.dev_mod_list_widget)
+        root_layout.addWidget(self.create_h1_label("Extra Mods"))
+        root_layout.addWidget(self.depend_mod_list_widget)
         root_layout.addWidget(button_refresh)
+
+        self.update_mod_list()
+
         return root_layout
     
     def update_status(self):
@@ -435,12 +457,15 @@ class MainUI(QWidget):
 
     def update_mod_list(self):
         """Clear and update the list widget with new mod names."""
-        self.mod_list_widget.clear()  # Clear the existing items
+        self.depend_mod_list_widget.clear()  # Clear the existing items
+        self.dev_mod_list_widget.clear()  # Clear the existing items
 
-        mod_names = self.config["mods"]
+        depend_mod_names = self.config["depend_mods"]
+        dev_mods_names = self.config["dev_mods"]
+
         selected = self.config["selected_mods"]
 
-        for mod_name in mod_names:
+        for mod_name in depend_mod_names:
             item = QListWidgetItem()
             checkbox = QCheckBox(mod_name)
 
@@ -448,8 +473,20 @@ class MainUI(QWidget):
             isChecked = mod_name in selected
 
             checkbox.setChecked(isChecked)  # 设置复选框状态
-            self.mod_list_widget.addItem(item)
-            self.mod_list_widget.setItemWidget(item, checkbox)
+            self.depend_mod_list_widget.addItem(item)
+            self.depend_mod_list_widget.setItemWidget(item, checkbox)
+            checkbox.stateChanged.connect(self.update_selected_mods)        
+
+        for mod_name in dev_mods_names:
+            item = QListWidgetItem()
+            checkbox = QCheckBox(mod_name)
+
+            # 正确的布尔判断
+            isChecked = mod_name in selected
+
+            checkbox.setChecked(isChecked)  # 设置复选框状态
+            self.dev_mod_list_widget.addItem(item)
+            self.dev_mod_list_widget.setItemWidget(item, checkbox)
             checkbox.stateChanged.connect(self.update_selected_mods)
     
     def update_selected_mods(self):
@@ -457,9 +494,15 @@ class MainUI(QWidget):
         self.config["selected_mods"] = []  # Clear the previous selection
 
         # Iterate through all checkboxes to update selected_mods
-        for index in range(self.mod_list_widget.count()):
-            item = self.mod_list_widget.item(index)
-            checkbox = self.mod_list_widget.itemWidget(item)
+        for index in range(self.dev_mod_list_widget.count()):
+            item = self.dev_mod_list_widget.item(index)
+            checkbox = self.dev_mod_list_widget.itemWidget(item)
+            if checkbox.isChecked():
+                self.config["selected_mods"].append(checkbox.text())  # Add the mod to selected_mods if checked
+        
+        for index in range(self.depend_mod_list_widget.count()):
+            item = self.depend_mod_list_widget.item(index)
+            checkbox = self.depend_mod_list_widget.itemWidget(item)
             if checkbox.isChecked():
                 self.config["selected_mods"].append(checkbox.text())  # Add the mod to selected_mods if checked
 

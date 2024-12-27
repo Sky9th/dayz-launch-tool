@@ -16,7 +16,9 @@ def read_config(config_file="./config.txt"):
         "mountDriverPath": "",
         "dayZInstallPath": "",
         "dayZServerInstallPath": "",
+        "MikeroDePboToolsMakePboPath": "",
         "devMod": "",
+        "devModName": "",
         "dependeciesMod": "",
         "missionPath": "",
         "offlineMissoinPath": "",
@@ -24,7 +26,8 @@ def read_config(config_file="./config.txt"):
         "selected": "",
         "kill_before_start": "",
         "modParams": [],
-        "mods": [],
+        "depend_mods": [],
+        "dev_mods": [],
         "selected_mods": []
     }
 
@@ -53,33 +56,38 @@ def read_config(config_file="./config.txt"):
 
     # 设置 mod 参数列表
     mod_params = []
-    mods = []
+    depend_mods = []
+    dev_mods = []
     # print(config)
 
-    def find_config_cpp(base_path, mount_path):
+    def find_mod_dir(base_path, mount_path, dev = True):
         """
         遍历指定路径下所有包含 config.cpp 文件的目录或以 @ 开头的文件夹，
         并将它们加入 mod_params。同时同步将路径创建软链接到 mountDriverPath 和 dayZInstallPath。
         """
         if os.path.exists(base_path):
-            for root, dirs, files in os.walk(base_path):
-                # 条件：包含 config.cpp 或当前文件夹名以 @ 开头
-                if "config.cpp" in files or os.path.basename(root).startswith("@"):
-                    folder_path = root  # 当前文件夹路径
-                    relative_path = os.path.relpath(folder_path, base_path)  # 计算相对路径
-                    
-                    # 构建软链接目标路径
-                    mount_link_path = os.path.join(mount_path, relative_path)
-                    dayz_link_path = os.path.join(config["dayZInstallPath"], relative_path)
+            for folder in os.listdir(base_path):
+                if folder.startswith(".") or os.path.isfile(base_path + "\\" + folder):
+                    continue
 
-                    # 添加到 mod_params
-                    if relative_path in config["selected_mods"]:
-                        mod_params.append(f"{mount_path}{relative_path}")
-                    mods.append(relative_path)
+                # 构建软链接目标路径
+                mount_link_path = os.path.join(mount_path, folder)
+                # dayz_link_path = os.path.join(config["dayZInstallPath"], relative_path)
 
+                # 添加到 mod_params
+                if folder.startswith("@"):
+                    depend_mods.append(folder)
+                    if folder in config["selected_mods"]:
+                        mod_params.append(f"{mount_path}{folder}")
+                elif dev:
+                    if folder not in dev_mods:
+                        dev_mods.append(folder)
+                
+
+                if(os.path.exists(mount_link_path) == False):
                     # 创建软链接
-                    create_symlink(folder_path, mount_link_path)
-                    create_symlink(folder_path, dayz_link_path)
+                    create_symlink(base_path + "\\" + folder, mount_link_path)
+                    # create_symlink(folder_path, dayz_link_path)
 
     def create_symlink(source, target):
         """
@@ -94,6 +102,7 @@ def read_config(config_file="./config.txt"):
                 return
         else:
             os.makedirs(os.path.dirname(target), exist_ok=True)  # 确保目标父目录存在
+            
 
         try:
             subprocess.run(f'mklink /D "{target}" "{source}"', shell=True, check=True)
@@ -101,16 +110,52 @@ def read_config(config_file="./config.txt"):
         except subprocess.CalledProcessError as e:
             print(f"Failed to create link: {e}")
 
-    # 遍历 dependeciesMod 目录
-    find_config_cpp(config["dependeciesMod"], config["mountDriverPath"])
+    def pack_dev_mod(source, target):
+        modPath = target + "@" + config["devModName"]
+        addPath = modPath + "\\addons"
+        makePbo = config["MikeroDePboToolsMakePboPath"] + "\\DePboTools\\bin\\MakePbo.exe"
 
-    # 遍历 devMod 目录
-    find_config_cpp(config["devMod"], config["mountDriverPath"])
+        # 检查并创建目标文件夹
+        if not os.path.exists(modPath):
+            os.makedirs(modPath)
+        if not os.path.exists(addPath):
+            os.makedirs(addPath)
+
+        # 获取 source 目录下所有的文件夹
+        for folder in os.listdir(source):
+            folder_path = os.path.join(source, folder)
+            # 确保是文件夹
+            if os.path.isdir(folder_path) and folder in config["selected_mods"]:
+                # 打包文件夹为 PBO 文件
+                pbo_filename = os.path.join(addPath, folder + ".pbo")
+                # command = f'"{makePbo}" "P:\\{folder}" "{pbo_filename}"'
+                command = [makePbo, f"P:\\{folder}", f"{pbo_filename}"];
+
+                subprocess.Popen(command, shell=True) 
+                print(f"Successfully packed {folder} into {pbo_filename}")
+                
+    
+    
+    try:
+        # 遍历 dependeciesMod 目录
+        find_mod_dir(config["dependeciesMod"], config["mountDriverPath"], False)
+
+        # 遍历 devMod 目录
+        find_mod_dir(config["devMod"], config["mountDriverPath"])
+
+        pack_dev_mod(config["devMod"], config["mountDriverPath"])
+    except subprocess.CalledProcessError as e:
+        print(f"Error packing : {e}")
+        pass
+    except FileNotFoundError as e:
+        print(f"FileNotFoundError: {e}")
+        pass
 
     # 设置最终的 modParams
     if mod_params:
-        config["modParams"] = "-mod=" + ";".join(mod_params)
-    config["mods"] = mods
+        config["modParams"] = "-mod=" + ";".join(mod_params) + ";" + config["mountDriverPath"] + "@" + config["devModName"]
+    config["depend_mods"] = depend_mods
+    config["dev_mods"] = dev_mods
 
     # 输出时处理路径的斜杠
     for key in config:

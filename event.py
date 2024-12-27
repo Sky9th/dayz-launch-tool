@@ -70,16 +70,17 @@ class Event():
                 print("Existing client thread stopped.")
 
         # 创建新的 `stop_event` 和 `LogMonitor` 实例
-        log_directory = self.ui.config["dayZInstallPath"]
         if server:
+            log_directory = self.ui.config["dayZServerInstallPath"]
             self.stop_server_event = threading.Event()  # 创建停止标志
-            log_directory += "\ServerProfile"
+            log_directory += "\ServerDebugProfile"
             monitor = LogMonitor(log_directory, self.ui.log_update_server_signal, stop_event=self.stop_server_event)
             self.server_worker = Worker(monitor.monitor)  # 创建服务器监控线程
             self.server_worker.start()  # 启动服务器线程
         else:
+            log_directory = self.ui.config["dayZInstallPath"]
             self.stop_client_event = threading.Event()  # 创建停止标志
-            log_directory += "\ClientProfile"
+            log_directory += "\ClientDebugProfile"
             monitor = LogMonitor(log_directory, self.ui.log_update_client_signal, stop_event=self.stop_client_event)
             self.client_worker = Worker(monitor.monitor)  # 创建客户端监控线程
             self.client_worker.start()  # 启动客户端线程
@@ -87,15 +88,14 @@ class Event():
     def on_mode_select(self, mode):
         self.ui.button_normal.setChecked(False)
         self.ui.button_mission.setChecked(False)
-        if (mode == "normal"):
+        if (mode == "MainMenu"):
             self.ui.button_normal.setChecked(True)
-        if (mode == "mission"):
+        if (mode == "AutoConnect"):
             self.ui.button_mission.setChecked(True)
         self.mode = mode
 
     def on_config_update(self, value, key):
         self.ui.config[key] = value
-        print(self.ui.config)
         self.save_config()
 
     def save_config(self):

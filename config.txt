@@ -1,13 +1,16 @@
 mountDriverPath=P:\
 dayZInstallPath=S:\SteamLibrary\steamapps\common\DayZ
 dayZServerInstallPath=S:\SteamLibrary\steamapps\common\DayZServer
+MikeroDePboToolsMakePboPath=C:\Program Files (x86)\Mikero
 devMod=I:\dayz\dayz-totemix
+devModName=Totemix
 dependeciesMod=I:\dayz\mods
 missionPath=
 offlineMissoinPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\firstMission.ChernarusPlus
 workbenchPath=
-selected=@CF,@RaG_BaseItems,@TotemixEntity,AdminTool,AdminToolDefine,BasicMap,BasicMapDefine,CraftingStation,MainMenu,SchanaModParty,SchanaModPartyDefine,ZenTerritories,ZenUtilities
-kill_before_start=True
-modParams=-mod=P:\@RaG_BaseItems;P:\JM\CF\GUI;P:\JM\CF\Legacy;P:\JM\CF\Scripts;P:\AdminTool;P:\AdminToolDefine;P:\BasicMap;P:\BasicMapDefine;P:\CraftingStation;P:\Gear;P:\MainMenu;P:\SchanaModParty;P:\SchanaModPartyDefine;P:\ZenTerritories;P:\ZenUtilities
-mods=['@CF', '@RaG_BaseItems', '@TotemixEntity', '@VPPAdminTools', 'JM\\CF\\GUI', 'JM\\CF\\Legacy', 'JM\\CF\\Scripts', 'AdminTool', 'AdminToolDefine', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'Entity\\kit', 'Entity\\workbench', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
-selected_mods=['@CF', '@RaG_BaseItems', '@TotemixEntity', 'AdminTool', 'AdminToolDefine', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
+selected=CraftingStation,@CF,@RaG_BaseItems,@VPPAdminTools
+kill_before_start=False
+modParams=-mod=P:\@CF;P:\@RaG_BaseItems;P:\@VPPAdminTools;P:\@Totemix
+depend_mods=['@CF', '@RaG_BaseItems', '@VPPAdminTools']
+dev_mods=['AdminTool', 'AdminToolDefine', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'Entity', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
+selected_mods=['CraftingStation', '@CF', '@RaG_BaseItems', '@VPPAdminTools']
