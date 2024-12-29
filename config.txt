@@ -10,7 +10,8 @@ offlineMissoinPath=S:\SteamLibrary\steamapps\common\DayZ\mpmissions\firstMission
 workbenchPath=
 selected=CraftingStation,@CF,@RaG_BaseItems
 kill_before_start=True
-modParams=-mod=P:\@CF;P:\@RaG_BaseItems;P:\@VPPAdminTools;P:\@Totemix
+folderSize=AdminTool,26400;AdminToolDefine,901;BasicMap,71039407;BasicMapDefine,891;CraftingStation,286283;Entity,8443;MainMenu,32538565;SchanaModParty,32206853;SchanaModPartyDefine,914;ZenTerritories,88728;ZenUtilities,12945
+modParams=-mod=P:\@CF;P:\@RaG_BaseItems;P:\@Totemix
 depend_mods=['@CF', '@RaG_BaseItems', '@VPPAdminTools']
 dev_mods=['AdminTool', 'AdminToolDefine', 'BasicMap', 'BasicMapDefine', 'CraftingStation', 'Entity', 'MainMenu', 'SchanaModParty', 'SchanaModPartyDefine', 'ZenTerritories', 'ZenUtilities']
 selected_mods=['CraftingStation', '@CF', '@RaG_BaseItems']

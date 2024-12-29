@@ -1,36 +1,15 @@
 import os
 import sys
+from functools import partial
 
 import psutil
-from run import run
 from thread import Worker
 from logger import LogMonitor  # 导入 logger 的监控日志函数
-import traceback
 import threading
 
 from util import get_resource_path
-
-def catch_exceptions(update_error_log):
-    """
-    A decorator to catch exceptions for instance methods and pass them to the error logging function.
-    :param update_error_log: A function to handle error messages.
-    """
-    def decorator(func):
-        def wrapper(*args, **kwargs):
-            try:
-                return func(*args, **kwargs)
-            except Exception as e:
-                # Try to retrieve the 'self' instance
-                self_instance = args[0] if args else None
-                # Format the exception details
-                error_message = f"Error in {func.__name__}: {str(e)}\n{traceback.format_exc()}"
-                # Call the provided update_error_log method
-                if self_instance and hasattr(self_instance, update_error_log.__name__):
-                    getattr(self_instance, update_error_log.__name__)(error_message)
-                else:
-                    print(error_message)  # Fallback to print if no UI handler is found
-        return wrapper
-    return decorator
+from pack import PackThread
+from run import DayZRunThread
 
 
 class Event():
@@ -43,16 +22,20 @@ class Event():
         self.monitor_client_worker = None
         self.monitor_server_worker = None
 
-    @catch_exceptions(catch_exceptions)
-    def run_dayz(self, program, server = False):
-        if(self.ui.config["kill_before_start"] == "True"):
-            self.kill_dayz()
+    def pack_pbo(self, program, server = False):
+        self.ui.update_error_log("packing pbo.....")
+        self.packWorker = PackThread(self.ui.config, self.kill_dayz_processes)
+        self.packWorker.progress_signal.connect(self.ui.update_pack_status)
+        self.packWorker.pack_signal.connect(partial(self.run_dayz, program, server))
+        self.packWorker.start()  # 启动子线程
 
-        # 实例化 Worker，并传入回调函数和参数
-        self.dayzWorker = Worker(run, self.mode, program, server)
-        self.dayzWorker.start()  # 启动子线程
+    def run_dayz(self, program, server, folder_sizes):
+        self.ui.update_error_log("run dayz game.....")
+        self.on_config_update(folder_sizes, "folderSize")
+        self.gameWorker = DayZRunThread(self.mode, program, server, self.ui.config)
+        self.gameWorker.start()
 
-        self.create_log_worker(server)
+        self.gameWorker.run_signal.connect(partial(self.create_log_worker, server))
         
     def create_log_worker(self, server):
         # 检查并结束现有线程
@@ -104,7 +87,6 @@ class Event():
         
         with open(self.filepath, "w") as file:
             for key, value in self.ui.config.items():
-                print(f"{key}={value}\n")
                 file.write(f"{key}={value}\n")
     
     def update_log(self, message):

@@ -1,9 +1,7 @@
 import os
 import subprocess
-import sys
 
 from util import get_resource_path
-
 
 def read_config(config_file="./config.txt"):
     """
@@ -25,6 +23,7 @@ def read_config(config_file="./config.txt"):
         "workbenchPath": "",
         "selected": "",
         "kill_before_start": "",
+        "folderSize": "",
         "modParams": [],
         "depend_mods": [],
         "dev_mods": [],
@@ -109,32 +108,6 @@ def read_config(config_file="./config.txt"):
             print(f"Link created: {target} -> {source}")
         except subprocess.CalledProcessError as e:
             print(f"Failed to create link: {e}")
-
-    def pack_dev_mod(source, target):
-        modPath = target + "@" + config["devModName"]
-        addPath = modPath + "\\addons"
-        makePbo = config["MikeroDePboToolsMakePboPath"] + "\\DePboTools\\bin\\MakePbo.exe"
-
-        # 检查并创建目标文件夹
-        if not os.path.exists(modPath):
-            os.makedirs(modPath)
-        if not os.path.exists(addPath):
-            os.makedirs(addPath)
-
-        # 获取 source 目录下所有的文件夹
-        for folder in os.listdir(source):
-            folder_path = os.path.join(source, folder)
-            # 确保是文件夹
-            if os.path.isdir(folder_path) and folder in config["selected_mods"]:
-                # 打包文件夹为 PBO 文件
-                pbo_filename = os.path.join(addPath, folder + ".pbo")
-                # command = f'"{makePbo}" "P:\\{folder}" "{pbo_filename}"'
-                command = [makePbo, f"P:\\{folder}", f"{pbo_filename}"];
-
-                subprocess.Popen(command, shell=True) 
-                print(f"Successfully packed {folder} into {pbo_filename}")
-                
-    
     
     try:
         # 遍历 dependeciesMod 目录
@@ -143,7 +116,6 @@ def read_config(config_file="./config.txt"):
         # 遍历 devMod 目录
         find_mod_dir(config["devMod"], config["mountDriverPath"])
 
-        pack_dev_mod(config["devMod"], config["mountDriverPath"])
     except subprocess.CalledProcessError as e:
         print(f"Error packing : {e}")
         pass

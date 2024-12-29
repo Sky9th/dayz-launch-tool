@@ -1,11 +1,11 @@
 from functools import partial
-from PySide6.QtWidgets import QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame, QLineEdit, QScrollArea, QFileDialog, QTextEdit, QListWidget, QListWidgetItem, QCheckBox
+from PySide6.QtWidgets import QHeaderView, QTableWidget, QWidget, QVBoxLayout, QHBoxLayout, QPushButton, QLabel, QFrame, QLineEdit, QScrollArea, QFileDialog, QTextEdit, QListWidget, QListWidgetItem, QCheckBox, QTableWidgetItem
 from PySide6.QtGui import QFont, QTextCursor, QIcon
 from PySide6.QtCore import Qt, QTimer, Signal, QObject
 from event import Event
 from read_config import read_config
 from util import get_resource_path
-from PySide6.QtCore import QMetaObject, Qt
+from PySide6.QtCore import QMetaObject, Qt, QDateTime
 
 # 定义全局信号类
 class UISignals(QObject):
@@ -196,11 +196,11 @@ class MainUI(QWidget):
         program_layout.setAlignment(Qt.AlignTop | Qt.AlignLeft)  # Align top-left
         label_program = self.create_h3_label("Program")
         button_dayz = QPushButton("DayZ")
-        button_dayz.clicked.connect(lambda: self.eventHandler.run_dayz("DayZ"))
+        button_dayz.clicked.connect(lambda: self.eventHandler.pack_pbo("DayZ"))
         # button_dayz_offline = QPushButton("DayZ Offline")
         # button_dayz_offline.clicked.connect(lambda: self.eventHandler.run_dayz("DayZ Offline"))
         button_dayzdiag = QPushButton("DayZDiag Offline")
-        button_dayzdiag.clicked.connect(lambda: self.eventHandler.run_dayz("DayZDiag Offline"))
+        button_dayzdiag.clicked.connect(lambda: self.eventHandler.pack_pbo("DayZDiag Offline"))
         # button_workbench = QPushButton("Workbench")
         # button_workbench.clicked.connect(lambda: self.eventHandler.run_dayz("Workbench"))
 
@@ -211,15 +211,15 @@ class MainUI(QWidget):
         # program_layout.addWidget(button_workbench)
         program_layout.setContentsMargins(0, 0, 50, 0)
         
-        check_layout = QHBoxLayout()
-        label_program = self.create_h3_label("")
-        checkbox_kill_before_start = QCheckBox("Kill task before run")
-        check_layout.addWidget(label_program)
-        check_layout.addWidget(checkbox_kill_before_start)
-        kill_status = self.str_to_bool(self.config["kill_before_start"])
-        checkbox_kill_before_start.setChecked(kill_status)
-        checkbox_kill_before_start.stateChanged.connect(self.update_status)
-        self.checkbox_kill_before_start = checkbox_kill_before_start
+        # check_layout = QHBoxLayout()
+        # label_program = self.create_h3_label("")
+        # checkbox_kill_before_start = QCheckBox("Kill task before run")
+        # check_layout.addWidget(label_program)
+        # check_layout.addWidget(checkbox_kill_before_start)
+        # kill_status = self.str_to_bool(self.config["kill_before_start"])
+        # checkbox_kill_before_start.setChecked(kill_status)
+        # checkbox_kill_before_start.stateChanged.connect(self.update_status)
+        # self.checkbox_kill_before_start = checkbox_kill_before_start
         
         # Create and add the second button group (Left and Right layout)
         mode_layout = QHBoxLayout()
@@ -242,7 +242,7 @@ class MainUI(QWidget):
         # Add the game label and button groups to the game layout
         game_layout.addWidget(self.create_h1_label("Game"))
         game_layout.addLayout(program_layout)
-        game_layout.addLayout(check_layout)
+        # game_layout.addLayout(check_layout)
         game_layout.addLayout(mode_layout)
 
         return game_layout
@@ -259,7 +259,7 @@ class MainUI(QWidget):
         label_program = self.create_h3_label("Program")
 
         button_dayz = QPushButton("DayZ")
-        button_dayz.clicked.connect(lambda: self.eventHandler.run_dayz("DayZ", True))
+        button_dayz.clicked.connect(lambda: self.eventHandler.pack_pbo("DayZ", True))
         # button_dayzdiag = QPushButton("DayZDiag")
         # button_dayzdiag.clicked.connect(lambda: self.eventHandler.run_dayz("DayZDiag", True))
 
@@ -422,47 +422,69 @@ class MainUI(QWidget):
         return root_layout
 
     def update_error_log(self, content):
-        """Append error content to the error log."""
+        """Append error content to the error log. If the content is too long, remove the oldest content."""
+        # 获取当前的时间戳
+        timestamp = QDateTime.currentDateTime().toString("yyyy-MM-dd hh:mm:ss")
+        
+        # 构建新的日志内容
+        log_content = f"[{timestamp}] {content}\n"
+        
+        # 获取当前日志内容
+        current_log = self.error_log.toPlainText()
+        
+        # 检查内容长度，超出最大长度则删除旧内容
+        if len(current_log) + len(log_content) > 1000:
+            # 计算需要删除的字符数
+            excess_length = len(current_log) + len(log_content) - 1000
+            # 删除多余的内容
+            self.error_log.setPlainText(current_log[excess_length:])
+        
+        # 在日志末尾插入新内容
         cursor = self.error_log.textCursor()
         cursor.movePosition(QTextCursor.End)
-        cursor.insertText(content + "\n")
+        cursor.insertText(log_content)
         self.error_log.setTextCursor(cursor)
         self.error_log.ensureCursorVisible()
 
     def create_mods_layout(self):
         root_layout = QVBoxLayout()
-        
-        self.dev_mod_list_widget = QListWidget()
-        self.dev_mod_list_widget.setFixedWidth(200)
 
         self.depend_mod_list_widget = QListWidget()
         self.depend_mod_list_widget.setFixedWidth(200)
+
+        # 表格显示目录和状态
+        self.dev_mod_table = QTableWidget(self)
+        self.dev_mod_table.setFixedWidth(200)
+        self.dev_mod_table.setColumnCount(2)
+        self.dev_mod_table.setHorizontalHeaderLabels(["Directory", "Status"])
+        self.dev_mod_table.setColumnWidth(0, 147)
+        self.dev_mod_table.setColumnWidth(1, 51)
+        self.dev_mod_table.verticalHeader().setVisible(False)
+        # self.dev_mod_table.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
 
         button_refresh = QPushButton()
         button_refresh.setText("Fresh")
         button_refresh.clicked.connect(self.refresh_config)
 
-        root_layout.addWidget(self.create_h1_label("Dev Mod"))
-        root_layout.addWidget(self.dev_mod_list_widget)
+        root_layout.addWidget(self.create_h1_label("Pack pbo"))
+        root_layout.addWidget(self.dev_mod_table)
         root_layout.addWidget(self.create_h1_label("Extra Mods"))
         root_layout.addWidget(self.depend_mod_list_widget)
         root_layout.addWidget(button_refresh)
 
-        self.update_mod_list()
+        self.update_mod_status()
 
         return root_layout
     
-    def update_status(self):
-        self.eventHandler.on_config_update(self.checkbox_kill_before_start.isChecked(), "kill_before_start")
+    # def update_status(self):
+    #     self.eventHandler.on_config_update(self.checkbox_kill_before_start.isChecked(), "kill_before_start")
 
-    def update_mod_list(self):
+    def update_mod_status(self):
         """Clear and update the list widget with new mod names."""
         self.depend_mod_list_widget.clear()  # Clear the existing items
-        self.dev_mod_list_widget.clear()  # Clear the existing items
 
         depend_mod_names = self.config["depend_mods"]
-        dev_mods_names = self.config["dev_mods"]
-
+        dev_mod_names = self.config["dev_mods"]
         selected = self.config["selected_mods"]
 
         for mod_name in depend_mod_names:
@@ -475,19 +497,23 @@ class MainUI(QWidget):
             checkbox.setChecked(isChecked)  # 设置复选框状态
             self.depend_mod_list_widget.addItem(item)
             self.depend_mod_list_widget.setItemWidget(item, checkbox)
-            checkbox.stateChanged.connect(self.update_selected_mods)        
-
-        for mod_name in dev_mods_names:
-            item = QListWidgetItem()
-            checkbox = QCheckBox(mod_name)
-
-            # 正确的布尔判断
-            isChecked = mod_name in selected
-
-            checkbox.setChecked(isChecked)  # 设置复选框状态
-            self.dev_mod_list_widget.addItem(item)
-            self.dev_mod_list_widget.setItemWidget(item, checkbox)
             checkbox.stateChanged.connect(self.update_selected_mods)
+
+        self.dev_mod_table.setRowCount(len(dev_mod_names))
+        row = 0
+        for mod_name in dev_mod_names:
+            self.dev_mod_table.setItem(row, 0, QTableWidgetItem(mod_name))
+            self.dev_mod_table.setItem(row, 1, QTableWidgetItem(""))
+            row = row + 1
+
+    def update_pack_status(self, folder, status):
+        # 遍历表格的所有行
+        for row in range(self.dev_mod_table.rowCount()):
+            # 获取第一列的值（即目录）
+            first_column_value = self.dev_mod_table.item(row, 0).text()
+            # 根据第一列的值，更新第二列的状态（这里示范根据某种逻辑来修改第二列的值）
+            if first_column_value == folder:  # 如果第一列有值
+                self.dev_mod_table.setItem(row, 1, QTableWidgetItem(status))  # 更新第二列的状态
     
     def update_selected_mods(self):
         """Update selected_mods based on checkbox states."""
@@ -523,4 +549,4 @@ class MainUI(QWidget):
 
     def refresh_config(self):
         self.config = read_config()
-        self.update_mod_list()
+        self.update_depend_mod_list()
