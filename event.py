@@ -23,8 +23,7 @@ class Event():
         self.monitor_server_worker = None
 
     def pack_pbo(self, program, server = False):
-        self.ui.update_error_log("packing pbo.....")
-        self.packWorker = PackThread(self.ui.config, self.kill_dayz_processes)
+        self.packWorker = PackThread(self.ui.config, self.kill_dayz_processes, self.ui)
         self.packWorker.progress_signal.connect(self.ui.update_pack_status)
         self.packWorker.pack_signal.connect(partial(self.run_dayz, program, server))
         self.packWorker.start()  # 启动子线程

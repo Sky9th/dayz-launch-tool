@@ -10,15 +10,17 @@ class PackThread(QThread):
     progress_signal = Signal(str, str)  # row index, status update signal
     pack_signal = Signal(str)
 
-    def __init__(self, config, kill):
+    def __init__(self, config, kill, ui):
         super().__init__()
         self.config = config
         self.kill = kill
+        self.ui = ui
         self.target = self.config["mountDriverPath"]
         self.source = self.config["devMod"]
 
     def run(self):
         
+        self.ui.update_error_log("packing pbo start.....")
         for folder in os.listdir(self.source):
             folder_path = os.path.join(self.source, folder)
             if os.path.isdir(folder_path) and folder.startswith(".") == False:
@@ -32,7 +34,11 @@ class PackThread(QThread):
         folder_sizes = self.load_folder_sizes(self.config["folderSize"])
         for folder in os.listdir(self.source):
             folder_path = os.path.join(self.source, folder)
+            pbo_filename = os.path.join(addPath, folder + ".pbo")
             if os.path.isdir(folder_path) and folder.startswith(".") == False:
+                if(os.path.isfile(pbo_filename) == False):
+                    packed_folders.append(folder)
+                    continue
                 if(folder in folder_sizes):
                     if(self.get_folder_size(folder) != folder_sizes[folder]):
                         packed_folders.append(folder)
@@ -40,8 +46,9 @@ class PackThread(QThread):
                 else:
                     packed_folders.append(folder)      
                     continue
+                self.progress_signal.emit(folder, "Skip")  
+                self.ui.update_error_log(f"packing pbo {folder} skip.....")
             
-            self.progress_signal.emit(folder, "Done")  
 
         # 检查并创建目标文件夹
         if not os.path.exists(modPath):
@@ -52,6 +59,7 @@ class PackThread(QThread):
         packed = True
 
         if (len(packed_folders) > 0 and self.kill):
+            self.ui.update_error_log(f"kill dayz process because repack.....")
             self.kill()
 
         # 获取 source 目录下所有的文件夹
@@ -70,12 +78,15 @@ class PackThread(QThread):
                     print(f"Successfully packed {folder} into {pbo_filename}")
                     if process.returncode == 0:
                         self.progress_signal.emit(folder, "Done")
+                        self.ui.update_error_log(f"packing pbo {folder} done.....")
                     else:
                         packed = False
                         self.progress_signal.emit(folder, "Failed")
+                        self.ui.update_error_log(f"packing pbo {folder} failed.....")
                 except Exception as e:
                     packed = False
                     self.progress_signal.emit(folder, f"Failed: {e}")
+                    self.ui.update_error_log(f"packing pbo {folder} failed.....")
         
         if (packed):
             folder_sizes = self.get_folder_sizes(os.listdir(self.source))

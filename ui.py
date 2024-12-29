@@ -437,14 +437,15 @@ class MainUI(QWidget):
             # 计算需要删除的字符数
             excess_length = len(current_log) + len(log_content) - 1000
             # 删除多余的内容
+            # 保留多余内容后面的部分
             self.error_log.setPlainText(current_log[excess_length:])
         
-        # 在日志末尾插入新内容
-        cursor = self.error_log.textCursor()
-        cursor.movePosition(QTextCursor.End)
-        cursor.insertText(log_content)
-        self.error_log.setTextCursor(cursor)
-        self.error_log.ensureCursorVisible()
+        # # 在日志末尾插入新内容
+        # cursor = self.error_log.textCursor()
+        # cursor.movePosition(QTextCursor.End)
+        # cursor.insertText(log_content)
+        # self.error_log.setTextCursor(cursor)
+        # self.error_log.ensureCursorVisible()
 
     def create_mods_layout(self):
         root_layout = QVBoxLayout()
