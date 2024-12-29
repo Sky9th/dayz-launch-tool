@@ -1,6 +1,7 @@
 import os
 import subprocess
 from read_config import read_config  # 导入 read_config.py 中的函数
+import time
 
 
 def run(dayzMode, program, server):
@@ -54,6 +55,8 @@ def run(dayzMode, program, server):
                 command.append("-connect=")
                 command.append("127.0.0.1:2302")
     
+    if(program == "DayZDiag Offline"):
+        time.sleep(2)
 
     print(command)
 
